@@ -8,11 +8,11 @@ import (
 )
 
 // GetServiceBusNamespace finds the ASB namespace and returns it
-func GetServiceBusNamespace() (*servicebus.Namespace, error) {
+func GetServiceBusNamespace(name string) (*servicebus.Namespace, error) {
 	if err := godotenv.Load(); err != nil {
 		return nil, err
 	}
-	connStr := os.Getenv("SERVICE_BUS_CONN_STR")
+	connStr := os.Getenv(name)
 
 	ns, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connStr))
 	if err != nil {

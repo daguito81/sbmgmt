@@ -14,9 +14,9 @@ const (
 )
 
 // GetOrBuildTopic creates a topic and returns the client or error
-func GetOrBuildTopic(topicName string) (*servicebus.Topic, *servicebus.TopicEntity, error) {
+func GetOrBuildTopic(nsname string, topicName string) (*servicebus.Topic, *servicebus.TopicEntity, error) {
 
-	ns, err := GetServiceBusNamespace()
+	ns, err := GetServiceBusNamespace(nsname)
 	if err != nil {
 		log.Fatalln("Error connecting to Service Bus: ", err)
 		return nil, nil, err
@@ -47,8 +47,8 @@ func GetOrBuildTopic(topicName string) (*servicebus.Topic, *servicebus.TopicEnti
 }
 
 // DeleteTopic deletes the named queue from Service Bus
-func DeleteTopic(topicName string) error {
-	ns, err := GetServiceBusNamespace()
+func DeleteTopic(nsname string, topicName string) error {
+	ns, err := GetServiceBusNamespace(nsname)
 	if err != nil {
 		log.Fatalln("Error connecting to Service Bus: ", err)
 		return err
@@ -68,8 +68,8 @@ func DeleteTopic(topicName string) error {
 }
 
 // GetOrBuildSubscription creates a new subscription or gets an existint subscription
-func GetOrBuildSubscription(subName string, topicName string, lockDur time.Duration, msgDur time.Duration) (*servicebus.Subscription, *servicebus.SubscriptionEntity, error) {
-	ns, err := GetServiceBusNamespace()
+func GetOrBuildSubscription(nsname string, subName string, topicName string, lockDur time.Duration, msgDur time.Duration) (*servicebus.Subscription, *servicebus.SubscriptionEntity, error) {
+	ns, err := GetServiceBusNamespace(nsname)
 	if err != nil {
 		log.Fatalln(err)
 		return nil, nil, err
@@ -77,7 +77,7 @@ func GetOrBuildSubscription(subName string, topicName string, lockDur time.Durat
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	_, _, err = GetOrBuildTopic(topicName)
+	_, _, err = GetOrBuildTopic(nsname, topicName)
 	if err != nil {
 		log.Fatalln(err)
 	}

@@ -9,9 +9,9 @@ import (
 )
 
 // GetOrBuildQueue creates a queue and returns the client or error
-func GetOrBuildQueue(queueName string) (*servicebus.Queue, error) {
+func GetOrBuildQueue(nsname string, queueName string) (*servicebus.Queue, error) {
 
-	ns, err := GetServiceBusNamespace()
+	ns, err := GetServiceBusNamespace(nsname)
 	if err != nil {
 		log.Fatalln("Error connecting to Service Bus: ", err)
 		return nil, err
@@ -42,8 +42,8 @@ func GetOrBuildQueue(queueName string) (*servicebus.Queue, error) {
 }
 
 // DeleteQueue deletes the named queue from Service Bus
-func DeleteQueue(queueName string) error {
-	ns, err := GetServiceBusNamespace()
+func DeleteQueue(nsname string, queueName string) error {
+	ns, err := GetServiceBusNamespace(nsname)
 	if err != nil {
 		log.Fatalln("Error connecting to Service Bus: ", err)
 		return err
