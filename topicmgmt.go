@@ -14,12 +14,12 @@ const (
 )
 
 // GetOrBuildTopic creates a topic and returns the client or error
-func GetOrBuildTopic(topicName string) (*servicebus.Topic, error) {
+func GetOrBuildTopic(topicName string) (*servicebus.Topic, *servicebus.TopicEntity, error) {
 
 	ns, err := GetServiceBusNamespace()
 	if err != nil {
 		log.Fatalln("Error connecting to Service Bus: ", err)
-		return nil, err
+		return nil, nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -29,21 +29,21 @@ func GetOrBuildTopic(topicName string) (*servicebus.Topic, error) {
 	tm := ns.NewTopicManager()
 	te, err := tm.Get(ctx, topicName)
 	if err != nil && !servicebus.IsErrNotFound(err) {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if te == nil {
 		_, err := tm.Put(ctx, topicName)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
 	t, err := ns.NewTopic(topicName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return t, nil
+	return t, te, nil
 }
 
 // DeleteTopic deletes the named queue from Service Bus
@@ -68,16 +68,16 @@ func DeleteTopic(topicName string) error {
 }
 
 // GetOrBuildSubscription creates a new subscription or gets an existint subscription
-func GetOrBuildSubscription(subName string, topicName string, lockDur time.Duration, msgDur time.Duration) (*servicebus.Subscription, error) {
+func GetOrBuildSubscription(subName string, topicName string, lockDur time.Duration, msgDur time.Duration) (*servicebus.Subscription, *servicebus.SubscriptionEntity, error) {
 	ns, err := GetServiceBusNamespace()
 	if err != nil {
 		log.Fatalln(err)
-		return nil, err
+		return nil, nil, err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	_, err = GetOrBuildTopic(topicName)
+	_, _, err = GetOrBuildTopic(topicName)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -88,7 +88,7 @@ func GetOrBuildSubscription(subName string, topicName string, lockDur time.Durat
 	}
 	se, err := sm.Get(ctx, subName)
 	if err != nil && !servicebus.IsErrNotFound(err) {
-		return nil, err
+		return nil, nil, err
 	}
 	// In case of empty, create subscription
 
@@ -99,13 +99,13 @@ func GetOrBuildSubscription(subName string, topicName string, lockDur time.Durat
 			servicebus.SubscriptionWithMessageTimeToLive(&msgDur),
 		)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 	// Create sub client
 	s, err := sm.Topic.NewSubscription(subName)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return s, nil
+	return s, se, nil
 }
