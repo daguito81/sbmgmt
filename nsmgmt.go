@@ -2,6 +2,7 @@ package sbmgmt
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
@@ -13,6 +14,7 @@ import (
 func GetServiceBusNamespace(name string) (*servicebus.Namespace, error) {
 	if err := godotenv.Load(); err != nil {
 		log.Error("Failed to do godotenv.Load()")
+		fmt.Println(err)
 		return nil, err
 	}
 	connStr := os.Getenv(name)
